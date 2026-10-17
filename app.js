@@ -115,10 +115,17 @@ const state = {
   toast: "",
   service: null,
   item: null,
+  merchant: null,
+  cuisine: "全部",
 };
 
 const rp = (n) => "Rp " + Math.round(n).toLocaleString("id-ID");
-const allItems = () => [...FOODS, ...Object.values(CATALOG).flatMap((c) => c.items)];
+const merchants = () => (typeof MERCHANTS === "undefined" ? [] : MERCHANTS);
+const allItems = () => [
+  ...FOODS,
+  ...merchants().flatMap((m) => m.products),
+  ...Object.values(CATALOG).flatMap((c) => c.items),
+];
 const findItem = (id) => allItems().find((x) => x.id === id);
 const cartCount = () => Object.values(state.cart).reduce((a, b) => a + b, 0);
 const cartTotal = () => Object.entries(state.cart).reduce((s, [id, n]) => s + findItem(id).price * n, 0);
@@ -191,55 +198,64 @@ function nav() {
     .join("")}</nav>`;
 }
 
-function foodCard(f) {
-  return `<article class="food">
-    <div class="photo" style="background:${f.bg}">
-      <span class="badge">★ ${f.score}</span>${f.emoji}
+function shopCard(m) {
+  return `<button class="shop-card" data-merch="${m.id}">
+    <img src="${m.cover}" alt="" loading="lazy" onerror="this.src='static/scenes/hero.jpg'">
+    <div class="shop-shade">
+      <span class="tag">${m.cuisine}</span>
+      <b>${m.name}</b>
+      <small>★ ${m.score} · ${m.mins} 分钟 · ${m.area}</small>
     </div>
-    <div class="meta">
-      <div class="name">${f.name}<br><span class="sub">${f.en}</span></div>
-      <div class="info">★ ${f.score} · ${f.mins} 分钟</div>
-      <div class="between"><span class="price">${rp(f.price)}</span>
-        <button class="add" data-add="${f.id}">+</button></div>
-    </div>
-  </article>`;
+  </button>`;
+}
+
+function spotCard(m) {
+  const dish = m.products[0];
+  return `<button class="spot" data-merch="${m.id}">
+    <img src="${dish.img}" alt="" loading="lazy" onerror="this.src='static/logo.jpg'">
+    <div><b>${m.name}</b><small>${m.cuisine} · ${rp(dish.price)} 起</small></div>
+  </button>`;
 }
 
 function home() {
-  const tiles = SERVICES.map(
+  const tiles = SERVICES.slice(0, 10).map(
     (s) => `<button class="tile" data-svc="${s.id}">
-      <div class="ico" style="background:${s.tint}">${s.emoji}</div><b>${s.name}</b></button>`
+      <div class="ico">${s.emoji}</div><b>${s.name}</b></button>`
   ).join("");
+  const list = merchants();
   return `<section class="screen">
-    <header class="top">
-      <div class="between">
-        <div class="row gap"><img class="logo-mark" src="static/logo.jpg" alt="悟空外卖"><strong>悟空外卖</strong></div>
-        <span class="sub">印尼悟空</span>
-      </div>
-      <div class="search">⌕ 搜索美食、超市、服务...</div>
-      <div class="loc"><span>📍 雅加达</span><span>附近配送</span></div>
-    </header>
-    <div class="pad">
-      <div class="banner">
-        <div>
-          <h2>WUKONG WAIMAI</h2>
-          <p>新用户首单 50% off</p>
-          <button class="pill" data-go="food" data-tab="home">即刻下单</button>
+    <div class="hero">
+      <img src="static/scenes/hero.jpg" alt="" onerror="this.src='static/logo.jpg'">
+      <div class="hero-mask"></div>
+      <div class="hero-copy">
+        <div class="brand-lock">
+          <img class="logo-mark" src="static/logo.jpg" alt="悟空外卖">
+          <div>
+            <p class="eyebrow">WUKONG DELIVERY</p>
+            <h1>悟空外卖</h1>
+          </div>
         </div>
-        <img src="static/logo.jpg" alt="" style="width:92px;height:92px;border-radius:22px">
+        <p>雅加达中文生活 · ${list.length} 家餐厅今夜可送</p>
       </div>
-      <div class="grid" style="margin-top:16px">${tiles}</div>
-      <div class="section-h"><h3>附近美食</h3><button data-go="food" data-tab="home">更多</button></div>
-      <div class="cards">${FOODS.slice(0, 4).map(foodCard).join("")}</div>
+    </div>
+    <div class="float-search">⌕ 搜索川菜、海南鸡、Kemang</div>
+    <div class="loc-row"><span>雅加达 · 唐格朗可配送</span><b>今晚 18:00–23:30</b></div>
+    <div class="pad">
+      <div class="grid">${tiles}</div>
+      <div class="section-h"><h3>主厨推荐</h3><button data-go="food" data-tab="home">全部商家</button></div>
+      <div class="h-scroll">${list.slice(0, 8).map(spotCard).join("")}</div>
+      <div class="section-h"><h3>附近餐厅</h3><span>${list.length} 家</span></div>
+      <div class="shop-list">${list.slice(0, 6).map(shopCard).join("")}</div>
     </div>
   </section>`;
 }
 
 function discover() {
   return `<section class="screen">
-    <header class="top blue">
-      <div class="between"><strong class="title" style="color:#fff">悟空外卖</strong><span>雅加达</span></div>
-      <div class="search">⌕ 搜索外卖、超市、旅游、打车...</div>
+    <header class="top">
+      <p class="eyebrow">JAKARTA</p>
+      <h1 class="title">生活服务</h1>
+      <div class="sub">超市、订座、旅游、到家，和外卖在同一本账里</div>
     </header>
     <div class="pad">
       <div class="grid nine">${SERVICES.filter((s) => s.id !== "lunch")
@@ -258,21 +274,61 @@ function discover() {
   </section>`;
 }
 
+function filteredMerchants() {
+  const all = merchants();
+  if (state.cuisine === "全部") return all;
+  return all.filter((m) => m.cuisine === state.cuisine);
+}
+
 function foodList() {
+  const cuisines = ["全部", ...new Set(merchants().map((m) => m.cuisine))];
+  const list = filteredMerchants();
   return `<section class="screen">
-    <div class="backbar"><button class="icon-btn" data-go="home" data-tab="home">‹</button><h1>附近美食</h1></div>
-    <div class="pad"><div class="cards">${FOODS.map(foodCard).join("")}</div></div>
-    ${
-      cartCount()
-        ? `<button class="cta" data-go="cart" data-tab="orders">购物车 ${cartCount()} 件 · ${rp(cartTotal())}</button>`
-        : ""
-    }
+    <div class="backbar"><button class="icon-btn" data-go="home" data-tab="home">‹</button><h1>雅加达餐厅</h1></div>
+    <div class="chips">${cuisines
+      .map((c) => `<button class="chip ${state.cuisine === c ? "on" : ""}" data-cuisine="${c}">${c}</button>`)
+      .join("")}</div>
+    <div class="pad"><div class="shop-list">${list.map(shopCard).join("")}</div>
+      <p class="count-note">${list.length} 家餐厅 · 每家 ${list[0] ? list[0].products.length : 32} 道菜</p>
+    </div>
+    ${cartCount() ? `<button class="cta" data-go="cart" data-tab="orders">购物车 ${cartCount()} 件 · ${rp(cartTotal())}</button>` : ""}
+  </section>`;
+}
+
+function menuView() {
+  const m = merchants().find((x) => x.id === state.merchant) || merchants()[0];
+  if (!m) return foodList();
+  return `<section class="screen">
+    <div class="menu-hero">
+      <img src="${m.cover}" alt="" onerror="this.src='static/scenes/hero.jpg'">
+      <button class="back-float" data-go="food" data-tab="home">‹</button>
+    </div>
+    <div class="menu-sheet">
+      <span class="tag" style="color:#8f2d24;border-color:rgba(143,45,36,.35)">${m.cuisine}</span>
+      <h1>${m.name}</h1>
+      <div class="meta-line">★ ${m.score} · ${m.mins} 分钟 · 配送 ${rp(m.fee)} · ${m.area}</div>
+      <p class="lead">${m.products.length} 道现做菜品。价格为印尼盾，演示不扣款。</p>
+      ${m.products
+        .map(
+          (p) => `<div class="dish">
+            <img src="${p.img}" alt="" loading="lazy" data-item="${p.id}" onerror="this.src='static/logo.jpg'">
+            <div class="dish-body" data-item="${p.id}">
+              <b>${p.name}</b><i>${p.en}</i>
+              <div class="between"><span class="price">${rp(p.price)}</span>
+                <button class="add" data-add="${p.id}">+</button></div>
+            </div>
+          </div>`
+        )
+        .join("")}
+    </div>
+    ${cartCount() ? `<button class="cta" data-go="cart" data-tab="orders">购物车 ${cartCount()} 件 · ${rp(cartTotal())}</button>` : ""}
   </section>`;
 }
 
 function offerRow(it) {
+  const scene = `static/scenes/${state.service || "mart"}.jpg`;
   return `<button class="offer" data-item="${it.id}">
-    <div class="photo sm" style="background:${it.bg}">${it.emoji}</div>
+    <div class="photo sm"><img src="${it.img || scene}" alt="" onerror="this.src='static/logo.jpg'"></div>
     <div class="offer-body">
       <b>${it.name}</b>
       <div class="sub">${it.shop}</div>
@@ -297,18 +353,19 @@ function serviceView() {
 
 function detailView() {
   const it = findItem(state.item);
-  const s = SERVICES.find((x) => x.id === state.service);
-  if (!it) return serviceView();
+  if (!it) return state.merchant ? menuView() : serviceView();
+  const back = it.img && String(it.id).includes("p") ? "menu" : "svc";
+  const photo = it.img || `static/scenes/${state.service || "hero"}.jpg`;
   return `<section class="screen no-nav">
-    <div class="backbar"><button class="icon-btn" data-go="svc" data-tab="discover">‹</button><h1>${s ? s.name : "详情"}</h1></div>
-    <div class="hero-emoji" style="background:${it.bg}">${it.emoji}</div>
-    <div class="card" style="margin-top:-18px">
-      <h3 style="font-size:18px">${it.name}</h3>
-      <div class="sub">${it.shop} · ${it.area}</div>
-      <div class="between" style="margin-top:8px"><span class="price">${rp(it.price)}</span><span class="sub">${it.unit} · ★ ${it.score}</span></div>
-      <p>${it.desc}</p>
+    <div class="backbar"><button class="icon-btn" data-go="${back}" data-tab="home">‹</button><h1>${it.name}</h1></div>
+    <div class="hero-photo"><img src="${photo}" alt="" onerror="this.src='static/logo.jpg'"></div>
+    <div class="card" style="margin-top:-28px;position:relative">
+      <h3 style="font-size:22px">${it.name}</h3>
+      <div class="sub">${it.en || ""} ${it.shop || ""} · ${it.area || ""}</div>
+      <div class="between" style="margin-top:8px"><span class="price">${rp(it.price)}</span><span class="sub">${it.unit || "1 份"} · ★ ${it.score || ""}</span></div>
+      <p>${it.desc || ""}</p>
     </div>
-    <button class="cta" data-add="${it.id}" data-after="cart">预约并加入结算</button>
+    <button class="cta" data-add="${it.id}" data-after="cart">加入结算</button>
   </section>`;
 }
 
@@ -322,7 +379,7 @@ function cartView() {
     <div class="backbar"><button class="icon-btn" data-go="food" data-tab="home">‹</button><h1>购物车</h1></div>
     <div class="card">${rows
       .map(
-        (f) => `<div class="line-item"><span style="font-size:28px">${f.emoji}</span>
+        (f) => `<div class="line-item">${f.img ? `<img src="${f.img}" alt="" onerror="this.src='static/logo.jpg'">` : `<span style="font-size:28px">${f.emoji || ""}</span>`}
           <div style="flex:1"><b>${f.name}</b><div class="price">${rp(f.price)}</div></div>
           <div class="qty"><button data-qty="${f.id}" data-d="-1">−</button><b>${state.cart[f.id]}</b>
           <button data-qty="${f.id}" data-d="1">+</button></div></div>`
@@ -388,9 +445,10 @@ function orders() {
 function me() {
   return `<section class="screen">
     <header class="top" style="text-align:center">
-      <img src="static/logo.jpg" alt="" style="width:72px;height:72px;border-radius:50%;margin:8px auto">
+      <img src="static/logo.jpg" alt="" style="width:76px;height:76px;border-radius:22px;margin:8px auto;border:1px solid rgba(198,163,106,.6)">
+      <p class="eyebrow">MEMBER</p>
       <h1 class="title">悟空行者</h1>
-      <div class="sub">LV. 5 · 雅加达</div>
+      <div class="sub">雅加达 · 黑金会员</div>
     </header>
     <div class="vip">
       <div class="between"><b>VIP</b><span>WUKONG 悟空外卖</span></div>
@@ -427,6 +485,7 @@ function about() {
 
 function screen() {
   if (state.view === "food") return foodList();
+  if (state.view === "menu") return menuView();
   if (state.view === "svc") return serviceView();
   if (state.view === "detail") return detailView();
   if (state.view === "cart") return cartView();
@@ -451,6 +510,21 @@ function render() {
       e.stopPropagation();
       add(el.dataset.add);
       if (el.dataset.after === "cart") go("cart", "orders");
+    });
+  });
+  document.querySelectorAll("[data-merch]").forEach((el) => {
+    el.addEventListener("click", () => {
+      state.merchant = el.dataset.merch;
+      state.view = "menu";
+      state.tab = "home";
+      render();
+      window.scrollTo(0, 0);
+    });
+  });
+  document.querySelectorAll("[data-cuisine]").forEach((el) => {
+    el.addEventListener("click", () => {
+      state.cuisine = el.dataset.cuisine;
+      render();
     });
   });
   document.querySelectorAll("[data-svc]").forEach((el) => {
