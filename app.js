@@ -225,7 +225,7 @@ function home() {
   const list = merchants();
   return `<section class="screen">
     <div class="hero">
-      <img src="static/scenes/hero.jpg" alt="" onerror="this.src='static/logo.jpg'">
+      <img class="hero-bg" src="static/scenes/hero.jpg" alt="">
       <div class="hero-mask"></div>
       <div class="hero-copy">
         <div class="brand-lock">

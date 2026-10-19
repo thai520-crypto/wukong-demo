@@ -39,13 +39,19 @@ img { max-width: 100%; display: block; }
 
 .hero {
   position: relative;
-  height: 292px;
+  height: calc(220px + var(--safe-t));
   color: #fff;
+  overflow: hidden;
 }
-.hero img { width: 100%; height: 100%; object-fit: cover; }
+.hero-bg {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+}
 .hero-mask {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(18, 10, 6, 0.25) 0%, rgba(18, 10, 6, 0.15) 40%, rgba(18, 10, 6, 0.82) 100%);
+  background: linear-gradient(180deg, rgba(18, 10, 6, 0.45) 0%, rgba(18, 10, 6, 0.12) 42%, rgba(18, 10, 6, 0.78) 100%);
 }
 .hero-copy {
   position: absolute; left: 16px; right: 16px; bottom: 16px;
@@ -54,7 +60,8 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; gap: 10px;
 }
 .logo-mark {
-  width: 42px; height: 42px; border-radius: 14px;
+  width: 40px; height: 40px; flex: none;
+  border-radius: 12px; object-fit: cover;
   border: 1px solid rgba(243, 230, 200, 0.7);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
@@ -67,7 +74,7 @@ img { max-width: 100%; display: block; }
 .hero p { margin: 4px 0 0; color: rgba(255, 255, 255, 0.82); font-size: 13px; }
 
 .float-search {
-  margin: -22px 16px 0;
+  margin: 14px 16px 0;
   position: relative;
   z-index: 2;
   background: rgba(255, 253, 249, 0.92);
