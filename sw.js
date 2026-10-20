@@ -1,6 +1,6 @@
 /* 悟空外卖演示 Service Worker：壳文件走网络优先，图片走缓存优先，离线也能打开。 */
-const VERSION = "wk-v16";
-const SHELL = ["./", "./index.html", "./app.css?v=16", "./app.js?v=16", "./data.js?v=16", "./manifest.webmanifest", "./static/logo.jpg", "./static/icon-192.png", "./static/icon-512.png"];
+const VERSION = "wk-v17";
+const SHELL = ["./", "./index.html", "./app.css?v=17", "./app.js?v=17", "./data.js?v=17", "./manifest.webmanifest", "./static/logo.jpg", "./static/icon-192.png", "./static/icon-512.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

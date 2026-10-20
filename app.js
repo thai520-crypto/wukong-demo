@@ -14,6 +14,9 @@ const I18N = {
   "city": ["雅加达", "Jakarta", "Jakarta"],
   "search.ph": ["琼州鸡饭 · 海南鸡饭 Rp 29.000 起", "Qiongzhou Chicken Rice · from Rp 29.000", "Nasi Ayam Hainan · mulai Rp 29.000"],
   "bn.recharge": ["充值送大红包", "Top up, get red packets", "Isi saldo, dapat angpao"], "bn.recharge.sub": ["充 Rp 500.000 送 Rp 50.000", "Top up Rp 500.000, get Rp 50.000", "Isi Rp 500.000, bonus Rp 50.000"], "bn.recharge.sub2": ["悟空钱包 · 持牌机构托管", "Wukong Wallet · held by a licensed institution", "Dompet Wukong · dikelola lembaga berizin"],
+  "bn.spa": ["上门按摩", "In-home massage", "Pijat panggilan"], "bn.spa.sub": ["巴厘 SPA · 到家服务", "Bali spa at your door", "Spa Bali ke rumah Anda"], "bn.spa.sub2": ["持证技师 · 平台保障 · 60 分钟起", "Certified therapists · from 60 min", "Terapis bersertifikat · mulai 60 menit"],
+  "bn.spa.cta": ["WhatsApp 预约", "Book on WhatsApp", "Pesan via WhatsApp"], "ad": ["广告", "Ad", "Iklan"],
+  "wa.spa": ["你好，我想预约悟空上门按摩。", "Hi, I'd like to book a Wukong in-home massage.", "Halo, saya ingin memesan pijat panggilan Wukong."],
   "bn.mart": ["精选好物", "Top picks", "Pilihan terbaik"], "bn.mart.sub": ["华人超市 · 当日达", "Chinese grocers · same day", "Toko Tionghoa · hari yang sama"],
   "bn.deal.sub": ["特价大餐 · 吃饱吃好", "Meal deals · eat well", "Promo makan · kenyang"], "bn.dine": ["团购 7 折", "Deals 30% off", "Promo diskon 30%"], "bn.dine.sub": ["到店吃更划算", "Cheaper dining in", "Lebih hemat di tempat"],
   "lunch.title": ["雅加达午餐推荐", "Jakarta lunch picks", "Rekomendasi makan siang"], "more": ["更多 ›", "More ›", "Lainnya ›"],
@@ -389,6 +392,22 @@ function filteredList() {
   if (state.listTab === "dist") return [...all].sort((a, b) => a.dist - b.dist);
   return all;
 }
+/* 上门按摩广告位：点击直接打开 WhatsApp 会话（wa.me），带本语言的预填问候。 */
+const WA_SPA = "6285284782146";
+const WA_SPA_SHOW = "+62 852 8478 2146";
+function spaAd() {
+  const href = `https://wa.me/${WA_SPA}?text=${encodeURIComponent(t("wa.spa"))}`;
+  return `<a class="banner ad" href="${href}" target="_blank" rel="noopener" aria-label="${t("bn.spa")} · ${t("bn.spa.cta")}">
+    <img src="static/banners/spa.jpg" alt="" onerror="this.remove()">
+    <span class="adtag">${t("ad")}</span>
+    <div class="cap">
+      <b class="y">${t("bn.spa")}</b>
+      <small>${t("bn.spa.sub")}<br>${t("bn.spa.sub2")}</small>
+      <span class="wa"><i></i><span>${WA_SPA_SHOW}</span></span>
+    </div>
+  </a>`;
+}
+
 function home() {
   const list = filteredList();
   const active = state.orders.find((o) => o.status === "ot.live" && o.shopId);
@@ -422,6 +441,7 @@ function home() {
           <div class="banner" data-svc="dine"><img src="static/banners/deal150.jpg" alt="" onerror="this.remove()"><div class="cap"><b>${t("bn.dine")}</b><small>${t("bn.dine.sub")}</small></div></div>
         </div>
       </div>
+      ${spaAd()}
       <div class="sec"><h3>${t("lunch.title")}</h3><button data-go="food">${t("more")}</button></div>
       <div class="hcards hide-scroll">${lunch.map(({ m, p }) => `<div class="hcard">
         <div class="ph" data-merch="${m.id}"><img src="${p.img}" alt="" loading="lazy"><span class="tag">${mName(m)} · ${mCuisine(m)}</span></div>
@@ -772,6 +792,7 @@ function serviceView() {
   if (!cat) return home();
   return `<section class="screen no-nav">${bar(tr(cat.name))}
     <div class="scene"><img src="${SCENE_OF[id] || "static/scenes/hero.jpg"}" alt="" onerror="this.remove()"><div class="cap"><b>${tr(cat.name)}</b><small>${tr(cat.lead)}</small></div></div>
+    ${id === "home" ? spaAd() : ""}
     <div class="offers">${cat.items.map(offerRow).join("")}</div>
     ${cartCount() ? cartBar(false) : ""}
   </section>`;
