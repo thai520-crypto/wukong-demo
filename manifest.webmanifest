@@ -1,0 +1,17 @@
+{
+  "name": "悟空外卖 · Wukong Waimai",
+  "short_name": "悟空外卖",
+  "description": "印尼悟空生活服务演示：外卖、超市、到店团购、旅游、到家服务、钱包与会员。",
+  "lang": "zh-CN",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FF4322",
+  "theme_color": "#FF4322",
+  "icons": [
+    { "src": "static/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "static/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "static/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -524,6 +524,26 @@ html:not([lang="zh-CN"]) .bcard .tx b { font-size: 13px; height: 53px; }
 .addr-list button .pin { color: var(--muted); font-size: 13px; margin-top: 2px; }
 .addr-list button small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 
+/* ---------- install hint ---------- */
+.install-tip {
+  position: fixed; left: 50%; transform: translateX(-50%); width: min(430px, 100%); bottom: calc(var(--nav) + var(--safe-b) + 8px); z-index: 25;
+  margin: 0; padding: 0 12px; display: flex; gap: 10px; align-items: center; pointer-events: none;
+}
+.install-tip > * { pointer-events: auto; }
+.install-tip img { width: 44px; height: 44px; border-radius: 12px; flex: none; box-shadow: 0 6px 16px rgba(0,0,0,.18); }
+.install-tip .t { flex: 1; min-width: 0; background: rgba(31,26,23,.94); color: #fff; border-radius: 14px; padding: 10px 12px; backdrop-filter: blur(10px); }
+.install-tip .t b { display: block; font-size: 13px; }
+.install-tip .t small { display: block; font-size: 11px; color: #d6d0cb; line-height: 1.4; margin-top: 2px; }
+.install-tip button { flex: none; background: var(--brand); color: #fff; border-radius: 999px; padding: 8px 12px; font-size: 12px; font-weight: 700; }
+
+/* ---------- app feel ---------- */
+@media (max-width: 480px) {
+  html, body { background: var(--bg); }
+  .phone { overscroll-behavior-y: none; }
+}
+button, img, .tile, .mcard, .hcard, .dish, .item { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+button:active { opacity: .85; }
+
 /* ---------- toast ---------- */
 .toast {
   position: fixed; left: 50%; bottom: calc(var(--nav) + var(--safe-b) + 24px); transform: translateX(-50%);

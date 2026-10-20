@@ -104,6 +104,11 @@ const I18N = {
   "about.op": ["运营主体", "Operator", "Operator"], "about.city": ["演示城市", "Demo city", "Kota demo"], "about.ver": ["版本", "Version", "Versi"], "about.ver.v": ["演示版 0.4", "Demo 0.4", "Demo 0.4"],
   "about.note": ["这是可在 iPhone Safari 打开的演示，不是应用商店正式版，不发生真实扣款。", "This is a Safari demo, not the App Store release. No real payments are made.", "Ini demo untuk Safari, bukan versi App Store. Tidak ada pembayaran sungguhan."],
   "lang.title": ["语言", "Language", "Bahasa"], "lang.lead": ["界面文字、商家、菜品和服务说明都会切换。", "Interface text, merchants, dishes and service descriptions all switch.", "Teks antarmuka, merchant, menu, dan deskripsi layanan ikut berubah."], "t.lang": ["已切换为简体中文", "Switched to English", "Beralih ke Bahasa Indonesia"],
+  // install hint
+  "pwa.title": ["装到 iPhone 桌面", "Add to your iPhone", "Pasang di iPhone"],
+  "pwa.ios": ["点 Safari 底部「分享」，再选「添加到主屏幕」，就能像 App 一样全屏打开。", "Tap Share at the bottom of Safari, then “Add to Home Screen”. It opens full screen like an app.", "Ketuk Bagikan di bawah Safari, lalu “Tambah ke Layar Utama”. Terbuka layar penuh seperti aplikasi."],
+  "pwa.other": ["用手机浏览器打开后选「添加到主屏幕」，即可像 App 一样使用。", "Open in your phone browser and choose “Add to Home Screen” to use it like an app.", "Buka di browser ponsel lalu pilih “Tambahkan ke Layar Utama” untuk memakainya seperti aplikasi."],
+  "pwa.close": ["知道了", "Got it", "Mengerti"],
   // toasts
   "t.added": ["已加入购物车", "Added to cart", "Ditambahkan ke keranjang"], "t.search": ["搜索本店菜品", "Search this menu", "Cari menu toko"], "t.saved": ["已收藏", "Saved", "Disimpan"], "t.share": ["分享链接已复制", "Link copied", "Tautan disalin"], "t.phone": ["演示环境，商家电话在正式版显示", "Demo: merchant phone shows in the full app", "Demo: nomor toko tampil di versi penuh"],
 };
@@ -821,12 +826,25 @@ function screen() {
   }
 }
 const NAV_VIEWS = ["home", "dine", "msgs", "me"];
+const IS_IOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+const STANDALONE = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+let hintClosed = false;
+try { hintClosed = localStorage.getItem("wk_hint") === "1"; } catch (e) { /* ignore */ }
+const isPhone = () => window.matchMedia("(max-width: 480px)").matches;
+function installHint() {
+  if (STANDALONE || hintClosed || state.view !== "home" || !isPhone() || cartCount()) return "";
+  return `<div class="install-tip">
+    <img src="static/icon-192.png" alt="">
+    <div class="t"><b>${t("pwa.title")}</b><small>${IS_IOS ? t("pwa.ios") : t("pwa.other")}</small></div>
+    <button data-hint-close="1">${t("pwa.close")}</button>
+  </div>`;
+}
 
 function render() {
   const y = window.scrollY;
   const html = screen();
   if (typeof html !== "string") return;
-  document.getElementById("app").innerHTML = html + (NAV_VIEWS.includes(state.view) ? nav() : "") + (state.toast ? `<div class="toast">${state.toast}</div>` : "");
+  document.getElementById("app").innerHTML = html + (NAV_VIEWS.includes(state.view) ? nav() : "") + installHint() + (state.toast ? `<div class="toast">${state.toast}</div>` : "");
   window.scrollTo(0, y);
   bind();
 }
@@ -869,6 +887,11 @@ function bind() {
   });
   on("[data-toast]", (el, e) => { e.stopPropagation(); toast(t(el.dataset.toast)); });
   on("[data-toast-text]", (el, e) => { e.stopPropagation(); toast(el.dataset.toastText); });
+  on("[data-hint-close]", () => {
+    hintClosed = true;
+    try { localStorage.setItem("wk_hint", "1"); } catch (e) { /* ignore */ }
+    render();
+  });
   const pages = document.querySelector(".svc-pages");
   if (pages) {
     pages.addEventListener("scroll", () => {
